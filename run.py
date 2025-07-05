@@ -11,14 +11,13 @@ import numpy as np
 
 def main(args):
    tok = WhisperTokenizer.from_pretrained(args.hf_model_dir)
-   # hf_model_path = "C:\\AMD\\fctsai\\models\\hf\\whisper-medium"
 
    # Load and Compile Model
    encoder_model_path = os.path.join(args.onnx_model_dir, "encoder_model.onnx")
-   encoder_cache_dir = os.path.abspath(os.path.join(os.path.basename(args.onnx_model_dir), "encoder_model"))
+   encoder_cache_dir = os.path.join(os.getcwd(), os.path.basename(args.onnx_model_dir), "encoder_model")
    os.makedirs(encoder_cache_dir, exist_ok=True)
    decoder_model_path = os.path.join(args.onnx_model_dir, "decoder_model.onnx")
-   decoder_cache_dir = os.path.abspath(os.path.join(os.path.basename(args.onnx_model_dir), "decoder_model"))
+   decoder_cache_dir = os.path.join(os.getcwd(), os.path.basename(args.model_dir), "decoder_model")
    os.makedirs(decoder_cache_dir, exist_ok=True)
 
    enc_sess = ort.InferenceSession(
@@ -30,8 +29,6 @@ def main(args):
                            }],
     )
 
-   print('Encoder Model compiled Successfully')
-
    dec_sess = ort.InferenceSession(
       decoder_model_path,
       providers=["VitisAIExecutionProvider"],
@@ -40,14 +37,14 @@ def main(args):
                         "cacheKey": "modelcachekey",
                         }],
    )
-   print('Decoder Model compiled Successfully')
 
    if args.vaiml_compile:
       return
    
    tok = WhisperTokenizer.from_pretrained(args.hf_model_dir)
+
    # Input Data
-   audio, sr = librosa.load(os.path.join('samples', 'jfk.wav'), sr=16000)
+   audio, sr = librosa.load(args.sample_path, sr=16000)
    feat = WhisperFeatureExtractor.from_pretrained(args.hf_model_dir)
    inputs = feat(audio, return_tensors="np", sampling_rate=16000)
    input_features = inputs["input_features"]
@@ -89,7 +86,7 @@ def main(args):
    end_dec = time.time()
 
    print(tok.decode(generated))
-   print(f"Source time {audio.shape[0]/16000}")
+   print(f"Source time {audio.shape[0]/sr}")
    print(f"Encoding time: {end_enc-start_enc}")
    print(f"Decoding time: {end_dec-start_dec}")
 
@@ -102,5 +99,6 @@ if __name__ == "__main__":
     parser.add_argument('--onnx_model_dir', type=str, help='Onnx Model Directory')
     parser.add_argument('--vaiml_compile', action='store_true', help='Compile Model on Linux')
     parser.add_argument('--decoder_size', default=128, type=int, help='Static Size for Decoder Model')
+    parser.add_argument('--sample_path', default="samples/jfk.wav", type=str, help='Voice sample for recognization')
     args = parser.parse_args()
     main(args)
