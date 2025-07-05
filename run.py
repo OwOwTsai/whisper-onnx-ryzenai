@@ -17,7 +17,7 @@ def main(args):
    encoder_cache_dir = os.path.join(os.getcwd(), os.path.basename(args.onnx_model_dir), "encoder_model")
    os.makedirs(encoder_cache_dir, exist_ok=True)
    decoder_model_path = os.path.join(args.onnx_model_dir, "decoder_model.onnx")
-   decoder_cache_dir = os.path.join(os.getcwd(), os.path.basename(args.model_dir), "decoder_model")
+   decoder_cache_dir = os.path.join(os.getcwd(), os.path.basename(args.onnx_model_dir), "decoder_model")
    os.makedirs(decoder_cache_dir, exist_ok=True)
 
    enc_sess = ort.InferenceSession(
