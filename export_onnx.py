@@ -9,7 +9,7 @@ from transformers import WhisperForConditionalGeneration
 def main(args):
     os.makedirs(args.output_dir, exist_ok=True)
 
-    model = WhisperForConditionalGeneration.from_pretrained(args.hf_model_path)
+    model = WhisperForConditionalGeneration.from_pretrained(args.hf_model_dir)
     model.eval()
 
     dummy_input_features = torch.randn(1, 80, 3000)
